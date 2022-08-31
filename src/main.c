@@ -97,11 +97,10 @@ int main(void){
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //draw
-            printf("aaaaaaa\n");
         chunk_bind(chunk);
-            printf("ajjjj\n");
+        printf("bound %d\n", glGetError());
         chunk_draw(chunk);
-            printf("SUS!!  \n");
+        printf("draw\n");
 
         glfwSwapBuffers(window);
 

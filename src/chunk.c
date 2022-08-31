@@ -117,28 +117,22 @@ void chunk_update(chunk_t* chunk){
             }
         }
     }
-    printf("aa\n");
-    glDeleteBuffers(1, &chunk->ibo);
-    glDeleteBuffers(1, &chunk->vbo);
+    //glDeleteBuffers(1, &chunk->ibo);
+    //glDeleteBuffers(1, &chunk->vbo);
 
-    printf("bb\n");
-    glGenBuffers(1, &chunk->ibo);
-    glGenBuffers(1, &chunk->vbo);
+    //glGenBuffers(1, &chunk->ibo);
+    //glGenBuffers(1, &chunk->vbo);
 
-    printf("cc\n");
     glBindBuffer(GL_ARRAY_BUFFER, chunk->vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->ibo);
 
     chunk->count = 6 * facec;
 
-    printf("dd\n");
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * facec * 4, v, GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * facec * sizeof(unsigned int), indices, GL_STATIC_DRAW);
 
-    printf("ee\n");
     free(v);
     free(indices);
-    printf("ff\n\n");
 }
 
 chunk_t* chunk_make(int x, int z){
