@@ -13,8 +13,7 @@ out vec3 v_normal;
 out vec3 v_fpos;
 out vec2 v_texcoord;
 
-void main()
-{
+void main(){
     gl_Position = u_proj * u_view * u_model * vec4(a_pos, 1.0);
     v_normal = mat3(transpose(inverse(u_model))) * a_normal;
     v_fpos = vec3(u_model * vec4(a_pos, 1.0));
@@ -27,11 +26,16 @@ $SHADER_TYPE FRAG
 out vec4 FragColor;
 
 uniform sampler2D u_tex;
+uniform vec3 u_lightdir;
 
 in vec3 v_normal;
 in vec3 v_fpos;
 in vec2 v_texcoord;
 
 void main(){
-    return vec4(1,1,1,1);
+    vec3 n = normalize(v_normal);
+    vec3 ld = normalize(u_lightdir);
+    float l = max(dot(n, ld), 0.0);
+    FragColor = (0.2 + l) * vec4(texture2D(u_tex, v_texcoord));
+    //FragColor = vec4(v_texcoord,1,1);
 }
