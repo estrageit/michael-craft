@@ -2,6 +2,15 @@
     "files.associations": {
         "array": "c",
         "string": "c",
-        "string_view": "c"
+        "string_view": "c",
+        "compare": "cpp",
+        "input.h": "c",
+        "stdlib.h": "c",
+        "player.h": "c",
+        "render.h": "c",
+        "algorithm": "c",
+        "random": "c",
+        "gl.h": "c",
+        "chunk.h": "c"
     }
 }

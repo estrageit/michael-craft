@@ -56,3 +56,4 @@ lib/
 build/
 textures/
 bin
+.vscode/

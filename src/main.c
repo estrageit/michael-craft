@@ -1,115 +1,60 @@
+#include "input.h"
+#include "window.h"
+#include "player.h"
+#include "scene.h"
+#include "render.h"
+#include "world.h"
+
 #include <stdio.h>
-#include <string.h>
 
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
-#include <cglm/cglm.h>
+int main(int argc, char** argv){
+    void* window = window_make();
+    input_t* input = input_make(1, window);
+    player_t* player = player_make();
+    player->pos[1] = 62.5;
+    world_t* world = world_make();
+    scene_t* scene = scene_make(world, 3);
+    render_t* render = render_make();
 
-#include "chunk.h"
-#include "shader.h"
-#include "texture.h"
+    float time = window_gettime();
 
-int wwidth = 640, wheight = 480;
+    render_update(render, scene);
+    printf("[INFO] Render update took %fs to complete\n", window_gettime() - time);
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height){
-    glViewport(0, 0, width, height);
-    wwidth = width;
-    wheight = height;
-}
+    render_bind(render);    
 
-int main(void){
-    GLFWwindow* window;
+    while (!window_run(window)){
+        float delta = window_gettime() - time;
+        time = window_gettime();
 
-    if (!glfwInit())
-        return -1;
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    window = glfwCreateWindow(wwidth, wheight, "Michael Craft", NULL, NULL);
-    if (!window){
-        glfwTerminate();
-        return -1;
-    }    
-
-    glfwMakeContextCurrent(window);
-    gladLoadGL(glfwGetProcAddress);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    glEnable(GL_DEPTH_TEST);
-
-    printf("[INFO] OpenGL Version: %s\n", glGetString(GL_VERSION));
-
-    /*
-    unsigned int s = chunk_v2s(6, 144, 10);
-    printf("%d\n", s);
-    unsigned int v[3];
-    chunk_s2v(v, s);
-    printf("%d %d %d\n", v[0], v[1], v[2]);
-    */
-    unsigned int vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    unsigned int shader = shader_make_from_file("res/shaders/chunk.glsl", NULL);
-    glUseProgram(shader);
-
-    unsigned int texture = texture_load("res/textures/blocks.png");
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    chunk_t* chunk = chunk_make(0, 0);
-    memset(chunk->data, 1, sizeof(chunk->data));
-    chunk->data[chunk_v2s(12, 60, 2)] = 3;
-    chunk->data[chunk_v2s(12, 60, 3)] = 1;
-    double t1 = glfwGetTime();
-    chunk_update(chunk);
-    printf("chunk update time: %fs\n", glfwGetTime() - t1);
-    chunk_bind(chunk);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)offsetof(vertex_t, pos));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)offsetof(vertex_t, normal));
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)offsetof(vertex_t, texcoord));
-
-    while (!glfwWindowShouldClose(window)){
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE))
+        input_update(input, window);
+        if (input_getkey(input, I_K_QUIT))
             break;
-        if (glfwGetKey(window, GLFW_KEY_E)){
-            t1 = glfwGetTime();
-            chunk_update(chunk);
-            printf("chunk update time: %fs\n", glfwGetTime() - t1);
+
+        player_update(player, input, delta);
+        if (input_getkeydown(input, I_K_RELOAD)){
+            render_update(render, scene);
+            printf("Position and rotation:\n");
+            printf("\t%f, %f, %f\n", player->pos[0], player->pos[1], player->pos[2]);
+            printf("\t%f, %f, %f\n", player->rot[0], player->rot[1], player->rot[2]);
         }
 
-        mat4 u_proj, u_view, u_model;
+        scene_update(scene, world, player);
 
-        glm_mat4_identity(u_model);
-        glm_lookat((vec3){sin(glfwGetTime()) * 5, 62, cos(glfwGetTime()) * 5}, (vec3){12, 60, 2}, (vec3){0, 1, 0}, u_view);
-        glm_perspective(glm_rad(90.0f), ((float)wwidth)/wheight, 0.1f, 100.0f, u_proj);
-
-        glUniform3f(glGetUniformLocation(shader, "u_lightdir"), -1, -3, -2);
-        glUniformMatrix4fv(glGetUniformLocation(shader, "u_proj"), 1, 0, (float*)u_proj);
-        glUniformMatrix4fv(glGetUniformLocation(shader, "u_view"), 1, 0, (float*)u_view);
-        glUniformMatrix4fv(glGetUniformLocation(shader, "u_model"), 1, 0, (float*)u_model);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        player_setview(player, render->u_view);
+        scene_setmodel(scene, render->u_model);
+        window_setproj(window, render->u_proj);
 
         //draw
-        chunk_bind(chunk);
-        printf("bound %d\n", glGetError());
-        chunk_draw(chunk);
-        printf("draw\n");
+        render_bind(render);
+        render_draw(render);
 
-        glfwSwapBuffers(window);
-
-        glfwPollEvents();
+        window_update(window);
     }
-    glDeleteVertexArrays(1, &vao);
-    glDeleteProgram(shader);
+    input_destroy(input);
+    world_destroy(world);
 
-    glfwTerminate();
+    window_terminate();
 
     return 0;
 }

@@ -37,5 +37,4 @@ void main(){
     vec3 ld = normalize(u_lightdir);
     float l = max(dot(n, ld), 0.0);
     FragColor = (0.2 + l) * vec4(texture2D(u_tex, v_texcoord));
-    //FragColor = vec4(v_texcoord,1,1);
 }
