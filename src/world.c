@@ -2,7 +2,6 @@
 
 #include "link.h"
 #include "chunk.h"
-#include "scene.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -50,6 +49,21 @@ char world_getblock(world_t* world, int x, int y, int z){
     }
     printf("[ERROR] Tried to get block that doesn't exist (%d, %d, %d)\n", x, y, z);
     return 0;
+}
+
+void world_setblock(world_t* world, int x, int y, int z, char block){
+    chunk_t* cur = world->chunks;
+    int cp[2], bp[3];
+    chunk_b2c(x, y, z, cp, bp);
+    while (cur != NULL){
+        if (cur->x == cp[0] && cur->z == cp[1]){
+            cur->data[chunk_v2s(bp[0], bp[1],  bp[2])] = block;
+            return;
+        }
+        cur = cur->next;
+    }
+    printf("[ERROR] Tried to set block that doesn't exist (%d, %d, %d)\n", x, y, z);
+    return;
 }
 
 void world_destroy(world_t* world){

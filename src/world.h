@@ -13,4 +13,5 @@ typedef struct world_t{
 world_t* world_make();
 void* world_getchunk(world_t* world, int x, int z);
 char world_getblock(world_t* world, int x, int y, int z);
+void world_setblock(world_t* world, int x, int y, int z, char block);
 void world_destroy(world_t* world);

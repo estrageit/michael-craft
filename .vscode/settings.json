@@ -11,6 +11,8 @@
         "algorithm": "c",
         "random": "c",
         "gl.h": "c",
-        "chunk.h": "c"
+        "chunk.h": "c",
+        "pthread.h": "c",
+        "stdio.h": "c"
     }
 }

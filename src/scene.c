@@ -5,6 +5,7 @@
 #include "chunk.h"
 #include "world.h"
 #include "player.h"
+#include "render.h"
 
 unsigned int scene_v2s(unsigned int vd, int x, int z){
     return x + vd + (z + vd) * (1 + 2 * vd);
@@ -29,12 +30,14 @@ scene_t* scene_make(void* world, unsigned int view_distance){
     return r;
 }
 
-void scene_update(scene_t* scene, void* world, void* player){
-    int cp[2], bp[3];
-    chunk_b2c(((player_t*)player)->pos[0], ((player_t*)player)->pos[1], ((player_t*)player)->pos[2], cp, bp);
-    if (cp[0] != scene->cx || cp[1] != scene->cz){
-        scene->cx = cp[0]; scene->cz = cp[1];
+void scene_update(scene_t* scene, void* world, void* player, void* rend){
+    int cx = floorf(((player_t*)player)->pos[0] / 16.0f);
+    int cz = floorf(((player_t*)player)->pos[2] / 16.0f);
+    if (cx != scene->cx || cz != scene->cz){
+        int ox = scene->cx - cx, oz = scene->cz - cz;
+        scene->cx = cx; scene->cz = cz;
         scene_updatechunks(scene, world);
+        render_offset(rend, scene, ox, oz);
     }
 }
 
@@ -47,10 +50,4 @@ char scene_aircheck(scene_t* scene, int x, int y, int z){
     return (x < 0 || x > 16 * (scene->vd * 2 + 1) - 1 || y < 0 ||
      y > 255 || z < 0 || z > 16 * (scene->vd * 2 + 1) - 1 ||
      scene_getblock(scene, x, y, z) == 0);
-}
-
-void scene_setmodel(scene_t* scene, void* u_model){
-    float diff = scene->vd * 16 ;
-    glm_mat4_identity(u_model);
-    glm_translate(u_model, (vec3){-diff, 0, -diff});
 }

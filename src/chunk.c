@@ -16,8 +16,8 @@ void chunk_s2v(unsigned int* v, unsigned int scalar){
 }
 
 void chunk_b2c(int x, int y, int z, int* xc, int* ic){
-    xc[0] = floorf(x / 16.0f);
-    xc[1] = floorf(z / 16.0f);
+    xc[0] = (int)floorf(x / 16.0f);
+    xc[1] = (int)floorf(z / 16.0f);
 
     ic[0] = x - (xc[0] * 16);
     ic[1] = y;
